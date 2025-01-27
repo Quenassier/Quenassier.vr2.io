@@ -1,0 +1,37 @@
+{
+    "scene": {
+        "skyTexture": "/path/to/sky_texture.jpg",
+        "groundColor": "#7BC8A4"
+    },
+    "objects": [
+        {
+            "type": "sphere",
+            "position": { "x": 2, "y": 1, "z": -5 },
+            "radius": 1,
+            "color": "red"
+        },
+        {
+            "type": "sphere",
+            "position": { "x": -3, "y": 1, "z": -7 },
+            "radius": 1,
+            "color": "blue"
+        },
+        {
+            "type": "sphere",
+            "position": { "x": 1, "y": 1, "z": -10 },
+            "radius": 1,
+            "color": "green"
+        }
+    ],
+    "timer": {
+        "initialTime": 30
+    },
+    "score": {
+        "initialScore": 0
+    },
+    "model": {
+        "gltfPath": "/path/to/model.glb",
+        "position": { "x": 0, "y": 2, "z": -10 },
+        "scale": { "x": 2, "y": 2, "z": 2 }
+    }
+}

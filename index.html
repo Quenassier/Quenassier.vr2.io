@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VR Game - Сбор объектов</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/deltaluca/aframe-physics-system/dist/aframe-physics-system.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <a-scene physics="gravity: -9.8">
+        <!-- Небо -->
+        <a-sky id="sky" rotation="0 0 0"></a-sky>
+        <!-- Пол -->
+        <a-plane id="ground" position="0 0 -10" rotation="-90 0 0" width="100" height="100" static-body></a-plane>
+        <!-- Камера с контроллерами -->
+        <a-camera id="camera" position="0 1.6 5" dynamic-body>
+            <a-entity id="left-hand" oculus-touch-controls="hand: left"></a-entity>
+            <a-entity id="right-hand" oculus-touch-controls="hand: right"></a-entity>
+        </a-camera>
+        <!-- Таймер -->
+        <a-entity id="timer" position="-4 4 -5" text="value: Time: 30; color: black; align: center; width: 10;"></a-entity>
+        <!-- Счет -->
+        <a-entity id="score" position="0 4 -5" text="value: Score: 0; color: black; align: center; width: 10;"></a-entity>
+        <!-- 3D модель -->
+        <a-entity id="model" position="0 2 -10" scale="2 2 2"></a-entity>
+    </a-scene>
+    <script>
+        // Загрузка JSON файла
+        fetch('settings.json')
+            .then(response => response.json())
+            .then(data => initializeScene(data))
+            .catch(error => console.error('Error loading settings:', error));
+
+        function initializeScene(settings) {
+            // Настройка неба
+            document.getElementById('sky').setAttribute('src', settings.scene.skyTexture);
+
+            // Настройка пола
+            document.getElementById('ground').setAttribute('color', settings.scene.groundColor);
+
+            // Настройка таймера
+            let timeLeft = settings.timer.initialTime;
+            document.querySelector('#timer').setAttribute('text', 'value', `Time: ${timeLeft}`);
+
+            // Настройка счета
+            let score = settings.score.initialScore;
+            document.querySelector('#score').setAttribute('text', 'value', `Score: ${score}`);
+
+            // Создание объектов для сбора
+            const scene = document.querySelector('a-scene');
+            settings.objects.forEach((objData, index) => {
+                const obj = document.createElement('a-' + objData.type);
+                obj.setAttribute('position', `${objData.position.x} ${objData.position.y} ${objData.position.z}`);
+                obj.setAttribute('radius', objData.radius);
+                obj.setAttribute('color', objData.color);
+                obj.setAttribute('class', 'collectible');
+                obj.setAttribute('collectible', '');
+                obj.setAttribute('dynamic-body', '');
+                scene.appendChild(obj);
+            });
+
+            // Добавление 3D модели
+            const modelEntity = document.getElementById('model');
+            modelEntity.setAttribute('gltf-model', `url(${settings.model.gltfPath})`);
+            modelEntity.setAttribute('position', `${settings.model.position.x} ${settings.model.position.y} ${settings.model.position.z}`);
+            modelEntity.setAttribute('scale', `${settings.model.scale.x} ${settings.model.scale.y} ${settings.model.scale.z}`);
+
+            // Логика игры
+            setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    document.querySelector('#timer').setAttribute('text', 'value', `Time: ${timeLeft}`);
+                } else {
+                    endGame(score);
+                }
+            }, 1000);
+
+            AFRAME.registerComponent('collectible', {
+                init: function () {
+                    this.el.addEventListener('collide', (e) => {
+                        if (e.detail.body.el.id === 'camera') {
+                            this.el.setAttribute('visible', 'false');
+                            updateScore();
+                        }
+                    });
+                }
+            });
+
+            function updateScore() {
+                score++;
+                document.querySelector('#score').setAttribute('text', 'value', `Score: ${score}`);
+            }
+
+            function endGame(finalScore) {
+                alert(`Игра завершена! Ваш финальный счет: ${finalScore}`);
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
